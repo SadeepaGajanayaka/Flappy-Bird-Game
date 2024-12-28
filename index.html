@@ -282,7 +282,16 @@
             gameLoop();
         });
 
+        startButton.addEventListener('touchstart', () => {
+            splashScreen.classList.add('hidden');
+            if (backgroundMusic.paused) {
+                backgroundMusic.play().catch((err) => console.error('Audio playback failed', err));
+            }
+            gameLoop();
+        }, { passive: true });
+
         retryButton.addEventListener('click', restartGame);
+        retryButton.addEventListener('touchstart', restartGame, { passive: true });
 
         birdImg.onload = () => {
             pipeImg.onload = () => {
