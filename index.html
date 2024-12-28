@@ -74,14 +74,12 @@
 <body>
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Splash Screen -->
     <div class="overlay" id="splashScreen">
         <img src="https://i.postimg.cc/WtGhd3zf/bird.png" alt="Flappy Bird" class="bird-image">
         <h1>Flappy Bird</h1>
         <button class="button" id="startButton">Start Game</button>
     </div>
 
-    <!-- Game Over Screen -->
     <div class="overlay hidden" id="gameOverScreen">
         <h1>Game Over</h1>
         <div class="score-text" id="finalScore">Final Score: 0</div>
@@ -117,10 +115,12 @@
 
         const pipes = [];
         const pipeWidth = 80;
-        const initialPipeGap = 180;
+        const initialPipeGap = 220;
         const pipeGapDecrement = 2;
         let pipeGap = initialPipeGap;
-        const pipeInterval = 120;
+        const pipeSpeed = 2;
+        const basePipeInterval = 120;
+        const pipeInterval = Math.round(basePipeInterval * (3 / pipeSpeed));
         let frameCount = 0;
         let score = 0;
         let gameOver = false;
@@ -164,7 +164,7 @@
             }
 
             for (let i = pipes.length - 1; i >= 0; i--) {
-                pipes[i].x -= 3;
+                pipes[i].x -= pipeSpeed;
 
                 if (pipes[i].x + pipeWidth < 0) {
                     pipes.splice(i, 1);
@@ -250,10 +250,22 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (!gameOver && !paused && e.code === 'Space') {
-                bird.velocity = bird.lift;
-                jumpSound.currentTime = 0;
-                jumpSound.play();
+            if (e.code === 'Space') {
+                if (splashScreen.classList.contains('hidden') && gameOverScreen.classList.contains('hidden')) {
+                    if (!gameOver && !paused) {
+                        bird.velocity = bird.lift;
+                        jumpSound.currentTime = 0;
+                        jumpSound.play();
+                    }
+                } else if (!splashScreen.classList.contains('hidden')) {
+                    splashScreen.classList.add('hidden');
+                    if (backgroundMusic.paused) {
+                        backgroundMusic.play().catch((err) => console.error('Audio playback failed', err));
+                    }
+                    gameLoop();
+                } else if (!gameOverScreen.classList.contains('hidden')) {
+                    restartGame();
+                }
             } else if (e.code === 'KeyP') {
                 paused = !paused;
             }
@@ -282,22 +294,8 @@
             gameLoop();
         });
 
-        startButton.addEventListener('touchstart', () => {
-            splashScreen.classList.add('hidden');
-            if (backgroundMusic.paused) {
-                backgroundMusic.play().catch((err) => console.error('Audio playback failed', err));
-            }
-            gameLoop();
-        }, { passive: true });
-
         retryButton.addEventListener('click', restartGame);
-        retryButton.addEventListener('touchstart', restartGame, { passive: true });
-
-        birdImg.onload = () => {
-            pipeImg.onload = () => {
-                splashScreen.classList.remove('hidden');
-            };
-        };
     </script>
 </body>
+
 </html>
