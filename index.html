@@ -39,7 +39,7 @@
 
         .button {
             padding: 10px 20px;
-            font-size: 5vw; /* Adjust for mobile scaling */
+            font-size: 20px;
             background-color: #4caf50;
             color: white;
             border: none;
@@ -54,18 +54,18 @@
         }
 
         .score-text {
-            font-size: 5vw;
+            font-size: 24px;
             margin: 10px 0;
         }
 
         h1 {
-            font-size: 10vw;
+            font-size: 48px;
             margin: 0;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
         }
 
         .bird-image {
-            width: 20vw;
+            width: 150px;
             margin-bottom: 20px;
         }
     </style>
@@ -250,39 +250,29 @@
         }
 
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                birdJump();
+            if (!gameOver && !paused && e.code === 'Space') {
+                bird.velocity = bird.lift;
+                jumpSound.currentTime = 0;
+                jumpSound.play();
+            } else if (e.code === 'Space') {
+                if (splashScreen.classList.contains('hidden') === false) {
+                    startButton.click();
+                } else if (gameOverScreen.classList.contains('hidden') === false) {
+                    retryButton.click();
+                }
             } else if (e.code === 'KeyP') {
                 paused = !paused;
             }
         });
 
         document.addEventListener('touchstart', (e) => {
-            birdJump();
+            if (!gameOver && !paused) {
+                bird.velocity = bird.lift;
+                jumpSound.currentTime = 0;
+                jumpSound.play();
+            }
             e.preventDefault();
         }, { passive: false });
-
-        function birdJump() {
-            if (splashScreen.classList.contains('hidden') && gameOverScreen.classList.contains('hidden')) {
-                if (!gameOver && !paused) {
-                    bird.velocity = bird.lift;
-                    jumpSound.currentTime = 0;
-                    jumpSound.play();
-                }
-            } else if (!splashScreen.classList.contains('hidden')) {
-                splashScreen.classList.add('hidden');
-                startGame();
-            } else if (!gameOverScreen.classList.contains('hidden')) {
-                restartGame();
-            }
-        }
-
-        function startGame() {
-            if (backgroundMusic.paused) {
-                backgroundMusic.play().catch((err) => console.error('Audio playback failed', err));
-            }
-            gameLoop();
-        }
 
         window.addEventListener('resize', () => {
             canvas.width = window.innerWidth;
@@ -290,8 +280,30 @@
             bird.y = canvas.height / 2;
         });
 
-        startButton.addEventListener('click', startGame);
+        startButton.addEventListener('click', () => {
+            splashScreen.classList.add('hidden');
+            if (backgroundMusic.paused) {
+                backgroundMusic.play().catch((err) => console.error('Audio playback failed', err));
+            }
+            gameLoop();
+        });
+
+        startButton.addEventListener('touchstart', () => {
+            splashScreen.classList.add('hidden');
+            if (backgroundMusic.paused) {
+                backgroundMusic.play().catch((err) => console.error('Audio playback failed', err));
+            }
+            gameLoop();
+        }, { passive: true });
+
         retryButton.addEventListener('click', restartGame);
+        retryButton.addEventListener('touchstart', restartGame, { passive: true });
+
+        birdImg.onload = () => {
+            pipeImg.onload = () => {
+                splashScreen.classList.remove('hidden');
+            };
+        };
     </script>
 </body>
 
